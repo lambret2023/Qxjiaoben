@@ -1,5 +1,5 @@
 yaml
-name: Run Node.js Script
+name: Run Kimi.js
 
 on:
   push:
