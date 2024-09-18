@@ -1,7 +1,4 @@
-
-const axios = require('axios');
-
-const url = "https://share.qingfe.com/mag/circle/v1/forum/threadWapPage?tid=539401&themecolor=e70000&circle_id=114&p_u=62482";
+const url = "https://share.qingfe.com/mag/circle/v1/forum/threadWapPage?tid=542941&themecolor=e70000&circle_id=118&p_u=61238";
 const totalRequests = 15;
 let requestCount = 0;
 
@@ -28,34 +25,41 @@ function getRandomUserAgent() {
   return userAgents[randomIndex];
 }
 
-async function visitPage() {
-  const headers = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'User-Agent': getRandomUserAgent(),
-    'Cookie': generateRandomCookie(),
-    'Accept-Language': 'zh-cn',
-    'Accept-Encoding': 'gzip,deflate,br'
+function visitPage(callback) {
+  const options = {
+    method: 'GET',
+    url: url,
+    headers: {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'User-Agent': getRandomUserAgent(),
+      'Cookie': generateRandomCookie(),
+   'Accept-Language': 'zh-cn',
+'Accept-Encoding': 'gzip,deflate,br'
+}
   };
 
-  try {
-    await axios.get(url, { headers });
+  $task.fetch(options).then(response => {
     console.log(`请求 ${requestCount + 1}: 亮哥哥今天很帅！`);
-    return true;
-  } catch (error) {
+    callback(true);
+  }, reason => {
     console.log(`请求 ${requestCount + 1}: 失败`);
-    return false;
-  }
+    callback(false);
+  });
 }
 
-async function refreshPageNTimes(n) {
-  while (requestCount < n) {
-    const success = await visitPage();
-    if (success) {
-      requestCount++;
-    }
-    await new Promise(resolve => setTimeout(resolve, 1000));
+function refreshPageNTimes(n) {
+  if (requestCount < n) {
+    visitPage(success => {
+      if (success) {
+        requestCount++;
+      }
+      setTimeout(() => {
+        refreshPageNTimes(n);
+      }, 1000);
+    });
+  } else {
+    console.log('所有请求已完成');
+    $done();
   }
-  console.log('所有请求已完成');
 }
 
 refreshPageNTimes(totalRequests);
